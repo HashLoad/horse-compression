@@ -1,0 +1,11 @@
+{
+	"name": "horse-compression",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "/src",
+	"projects": [],
+	"dependencies": {
+		"github.com/hashload/horse": "^1.6.7"
+	}
+}
