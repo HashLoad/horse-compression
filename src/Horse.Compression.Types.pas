@@ -31,8 +31,8 @@ begin
   case Self of
     THorseCompressionType.DEFLATE:
       Result := -15;
-    THorseCompressionType.GZIP:
-      Result := 31;
+  else
+    Result := 31;
   end;
 end;
 

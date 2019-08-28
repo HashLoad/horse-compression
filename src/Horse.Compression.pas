@@ -21,6 +21,7 @@ var
   LResponseCompressionType: THorseCompressionType;
   LWebResponse: TWebResponse;
 begin
+  Next;
   LWebResponse := THorseHackResponse(Res).GetWebResponse;
   if (not Assigned(LWebResponse.ContentStream)) or (LWebResponse.ContentStream is TFileStream) or
     (LWebResponse.ContentStream.Size <= COMPRESSION_THRESHOLD) then
@@ -46,11 +47,7 @@ begin
     LWebResponse.Content := EmptyStr;
     LWebResponse.ContentStream.Size := 0;
     LWebResponse.ContentStream.CopyFrom(LMemoryStream, 0);
-    {$IF Defined(SeattleOrBetter)}
-      LWebResponse.ContentEncoding := LResponseCompressionType.ToString;
-    {$ELSE}
-      LWebResponse.ContentEncoding := AnsiString(LResponseCompressionType.ToString);
-    {$ENDIF}
+    LWebResponse.ContentEncoding := LResponseCompressionType.ToString;
   finally
     LMemoryStream.Free;
   end;
