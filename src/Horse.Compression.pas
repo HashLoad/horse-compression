@@ -8,23 +8,24 @@ procedure Compression(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 
 implementation
 
-uses System.Classes, System.ZLib, Horse.Compression.Types, System.SysUtils, Web.HTTPApp;
+uses System.Classes, System.ZLib, Horse.Compression.Types, System.SysUtils, Web.HTTPApp, System.JSON;
 
 procedure Compression(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 const
   COMPRESSION_THRESHOLD = 1024;
-  ACCEPT_ENCODING = 'Accept-Encoding';
+  ACCEPT_ENCODING = 'accept-encoding';
 var
   LMemoryStream: TMemoryStream;
   LAcceptEncoding: string;
   LZStream: TZCompressionStream;
   LResponseCompressionType: THorseCompressionType;
   LWebResponse: TWebResponse;
+  LContent: TObject;
 begin
   Next;
+  LContent := THorseHackResponse(Res).GetContent;
   LWebResponse := THorseHackResponse(Res).GetWebResponse;
-  if (not Assigned(LWebResponse.ContentStream)) or (LWebResponse.ContentStream is TFileStream) or
-    (LWebResponse.ContentStream.Size <= COMPRESSION_THRESHOLD) then
+  if (not Assigned(LContent)) or (not LContent.InheritsFrom(TJSONValue)) then
     Exit;
   if not Req.Headers.TryGetValue(ACCEPT_ENCODING, LAcceptEncoding) then
     Exit;
@@ -33,6 +34,9 @@ begin
   else if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding.ToLower) > 0 then
     LResponseCompressionType := THorseCompressionType.DEFLATE
   else
+    Exit;
+  LWebResponse.ContentStream := TStringStream.Create(TJSONValue(LContent).ToJSON);
+  if LWebResponse.ContentStream.Size <= COMPRESSION_THRESHOLD then
     Exit;
   LMemoryStream := TMemoryStream.Create;
   try
