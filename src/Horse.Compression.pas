@@ -24,17 +24,18 @@ var
 begin
   Next;
   LContent := THorseHackResponse(Res).GetContent;
-  LWebResponse := THorseHackResponse(Res).GetWebResponse;
   if (not Assigned(LContent)) or (not LContent.InheritsFrom(TJSONValue)) then
     Exit;
   if not Req.Headers.TryGetValue(ACCEPT_ENCODING, LAcceptEncoding) then
     Exit;
-  if Pos(THorseCompressionType.GZIP.ToString, LAcceptEncoding.ToLower) > 0 then
+  LAcceptEncoding := LAcceptEncoding.ToLower;
+  if Pos(THorseCompressionType.GZIP.ToString, LAcceptEncoding) > 0 then
     LResponseCompressionType := THorseCompressionType.GZIP
-  else if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding.ToLower) > 0 then
+  else if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding) > 0 then
     LResponseCompressionType := THorseCompressionType.DEFLATE
   else
     Exit;
+  LWebResponse := THorseHackResponse(Res).GetWebResponse;
   LWebResponse.ContentStream := TStringStream.Create(TJSONValue(LContent).ToJSON);
   if LWebResponse.ContentStream.Size <= COMPRESSION_THRESHOLD then
     Exit;
