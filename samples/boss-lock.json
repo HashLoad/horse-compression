@@ -20,8 +20,8 @@
 		},
 		"github.com/viniciussanchez/horse-compression": {
 			"name": "horse-compression",
-			"version": "master",
-			"hash": "f47d319aa65fc9f87895d1a712216a7c",
+			"version": "v1.1.0",
+			"hash": "4cf4929cf8b209101943fcb39aa49921",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
