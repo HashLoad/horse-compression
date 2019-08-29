@@ -2,17 +2,27 @@ unit Horse.Compression;
 
 interface
 
-uses Horse;
+uses Horse, System.Classes, System.ZLib, Horse.Compression.Types, System.SysUtils, Web.HTTPApp, System.JSON;
 
-procedure Compression(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+const
+  COMPRESSION_THRESHOLD = 1024;
+
+procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+function Compression(const ACompressionThreshold: Integer = COMPRESSION_THRESHOLD): THorseCallback;
 
 implementation
 
-uses System.Classes, System.ZLib, Horse.Compression.Types, System.SysUtils, Web.HTTPApp, System.JSON;
+var
+  CompressionThreshold: Integer;
 
-procedure Compression(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+function Compression(const ACompressionThreshold: Integer = COMPRESSION_THRESHOLD): THorseCallback;
+begin
+  CompressionThreshold := ACompressionThreshold;
+  Result := Middleware;
+end;
+
+procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 const
-  COMPRESSION_THRESHOLD = 1024;
   ACCEPT_ENCODING = 'accept-encoding';
 var
   LMemoryStream: TMemoryStream;
@@ -37,7 +47,7 @@ begin
     Exit;
   LWebResponse := THorseHackResponse(Res).GetWebResponse;
   LWebResponse.ContentStream := TStringStream.Create(TJSONValue(LContent).ToJSON);
-  if LWebResponse.ContentStream.Size <= COMPRESSION_THRESHOLD then
+  if LWebResponse.ContentStream.Size <= CompressionThreshold then
     Exit;
   LMemoryStream := TMemoryStream.Create;
   try
