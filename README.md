@@ -14,7 +14,7 @@ var
 begin
   App := THorse.Create(9000);
 
-  App.Use(Compression); // Must come before Jhonson middleware
+  App.Use(Compression()); // Must come before Jhonson middleware
   App.Use(Jhonson);
 
   App.Get('ping',
