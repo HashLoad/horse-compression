@@ -36,7 +36,8 @@ begin
   LContent := THorseHackResponse(Res).GetContent;
   if (not Assigned(LContent)) or (not LContent.InheritsFrom(TJSONValue)) then
     Exit;
-  if not Req.Headers.TryGetValue(ACCEPT_ENCODING, LAcceptEncoding) then
+  LAcceptEncoding := Req.Headers[ACCEPT_ENCODING];
+  if LAcceptEncoding.Trim.IsEmpty then
     Exit;
   LAcceptEncoding := LAcceptEncoding.ToLower;
   if Pos(THorseCompressionType.GZIP.ToString, LAcceptEncoding) > 0 then
