@@ -3,11 +3,10 @@
 	"description": "",
 	"version": "1.0.0",
 	"homepage": "",
-	"mainsrc": "/src",
+	"mainsrc": "./",
 	"projects": [],
 	"dependencies": {
-		"github.com/hashload/horse": "^1.7.0",
-		"github.com/hashload/jhonson": "^1.0.2",
-		"github.com/viniciussanchez/horse-compression": "^v1.1.0"
+		"github.com/hashload/horse": "^v2.0.0",
+		"github.com/hashload/jhonson": "^1.0.5"
 	}
 }

@@ -1,22 +1,16 @@
 program Samples;
 
 {$APPTYPE CONSOLE}
-
 {$R *.res}
 
-uses
-  Horse, Horse.Jhonson, Horse.Compression, System.JSON;
-
-var
-  App: THorse;
+uses Horse, Horse.Jhonson, Horse.Compression, System.JSON;
 
 begin
-  App := THorse.Create(9000);
+  THorse
+    .Use(Compression()) // Must come before Jhonson middleware
+    .Use(Jhonson);
 
-  App.Use(Compression()); // Must come before Jhonson middleware
-  App.Use(Jhonson);
-
-  App.Get('ping',
+  THorse.Get('/ping',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     var
       I: Integer;
@@ -28,5 +22,5 @@ begin
       Res.Send(LPong);
     end);
 
-  App.Start;
+  THorse.Listen(9000);
 end.
