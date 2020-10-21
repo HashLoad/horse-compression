@@ -1,8 +1,9 @@
 unit Horse.Compression;
 
+
 interface
 
-uses Horse, System.Classes, System.ZLib, Horse.Compression.Types, System.SysUtils, Web.HTTPApp, System.JSON;
+uses Horse, System.Classes, System.ZLib, System.SysUtils, Web.HTTPApp, System.JSON;
 
 const
   COMPRESSION_THRESHOLD = 1024;
@@ -22,50 +23,61 @@ begin
 end;
 
 procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+type
+  TCompressionType = (ctDeflate, ctGZIP);
+
 const
-  ACCEPT_ENCODING = 'accept-encoding';
+  COMPRESSION_TYPE_AS_STRING: array [TCompressionType] of string = ('deflate', 'gzip');
+  COMPRESSION_ZLIB_WINDOW_BITS: array [TCompressionType] of Integer = (-15, 31);
+
 var
   LMemoryStream: TMemoryStream;
   LAcceptEncoding: string;
   LZStream: TZCompressionStream;
-  LResponseCompressionType: THorseCompressionType;
+  LCompressionType: TCompressionType;
   LWebResponse: TWebResponse;
-  LContent: TObject;
+  LContent: string;
 begin
   Next;
-  LContent := THorseHackResponse(Res).GetContent;
-  if (not Assigned(LContent)) or (not LContent.InheritsFrom(TJSONValue)) then
-    Exit;
-  LAcceptEncoding := Req.Headers[ACCEPT_ENCODING];
+
+  LAcceptEncoding := Req.Headers['accept-encoding'];
   if LAcceptEncoding.Trim.IsEmpty then
     Exit;
-  LAcceptEncoding := LAcceptEncoding.ToLower;
-  if Pos(THorseCompressionType.GZIP.ToString, LAcceptEncoding) > 0 then
-    LResponseCompressionType := THorseCompressionType.GZIP
-  else if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding) > 0 then
-    LResponseCompressionType := THorseCompressionType.DEFLATE
-  else
+
+  LContent := THorseHackResponse(Res).GetWebResponse.Content;
+  if LContent.Trim.IsEmpty then
     Exit;
+
   LWebResponse := THorseHackResponse(Res).GetWebResponse;
-  LWebResponse.ContentStream := TStringStream.Create(TJSONValue(LContent).ToJSON);
+  LWebResponse.ContentStream := TStringStream.Create(LContent);
+
   if LWebResponse.ContentStream.Size <= CompressionThreshold then
     Exit;
+
+  if (Pos(COMPRESSION_TYPE_AS_STRING[TCompressionType.ctGZIP], LAcceptEncoding.Trim.ToLower) > 0) then
+    LCompressionType := TCompressionType.ctGZIP
+  else
+    LCompressionType := TCompressionType.ctDeflate;
+
   LMemoryStream := TMemoryStream.Create;
   try
     LWebResponse.ContentStream.Position := 0;
-    LZStream := TZCompressionStream.Create(LMemoryStream, TZCompressionLevel.zcMax, LResponseCompressionType.WindowsBits);
+
+    LZStream := TZCompressionStream.Create(LMemoryStream, TZCompressionLevel.ZcMax, COMPRESSION_ZLIB_WINDOW_BITS[LCompressionType]);
     try
       LZStream.CopyFrom(LWebResponse.ContentStream, 0);
     finally
-      LZStream.Free;
+      FreeAndNil(LZStream);
     end;
+
     LMemoryStream.Position := 0;
+
     LWebResponse.Content := EmptyStr;
     LWebResponse.ContentStream.Size := 0;
     LWebResponse.ContentStream.CopyFrom(LMemoryStream, 0);
-    LWebResponse.ContentEncoding := LResponseCompressionType.ToString;
+    LWebResponse.ContentEncoding := COMPRESSION_TYPE_AS_STRING[LCompressionType];
   finally
-    LMemoryStream.Free;
+    FreeAndNil(LMemoryStream);
   end;
 end;
 
