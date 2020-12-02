@@ -22,7 +22,7 @@ begin
 end;
 
 procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
-  procedure _Exec(const AReq: THorseRequest; const ARes: THorseResponse);
+  procedure _Exec;
   type
     TCompressionType = (ctDeflate, ctGZIP);
 
@@ -38,11 +38,11 @@ procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
     LWebResponse: TWebResponse;
     LContent: string;
   begin
-    LAcceptEncoding := AReq.Headers['accept-encoding'];
+    LAcceptEncoding := Req.Headers['accept-encoding'];
     if LAcceptEncoding.Trim.IsEmpty then
       Exit;
 
-    LContent := THorseHackResponse(ARes).GetWebResponse.Content;
+    LContent := THorseHackResponse(Res).GetWebResponse.Content;
     if LContent.Trim.IsEmpty then
       Exit;
 
@@ -83,7 +83,7 @@ begin
   try
     Next;
   finally
-    _Exec(Req, Res);
+    _Exec;
   end;
 end;
 
