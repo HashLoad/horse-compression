@@ -36,3 +36,4 @@ contains
   Horse.Compression.Types in 'src\Horse.Compression.Types.pas';
 
 end.
+

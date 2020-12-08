@@ -14,8 +14,6 @@ type
 
 implementation
 
-{ THorseCompressionTypeHelper }
-
 function THorseCompressionTypeHelper.ToString: string;
 begin
   case Self of
