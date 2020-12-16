@@ -47,7 +47,7 @@ procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: TProc);
       Exit;
 
     LWebResponse := THorseHackResponse(Res).GetWebResponse;
-    LWebResponse.ContentStream := TStringStream.Create(LContent);
+    LWebResponse.ContentStream := TStringStream.Create(LContent, TEncoding.UTF8);
 
     if LWebResponse.ContentStream.Size <= CompressionThreshold then
       Exit;
