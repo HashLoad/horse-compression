@@ -1,5 +1,7 @@
 unit Horse.Compression.Types;
-
+{$IF DEFINED(FPC)}
+{$MODE DELPHI}{$H+}
+{$ENDIF}
 interface
 
 type
