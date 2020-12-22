@@ -78,7 +78,7 @@ begin
     LWebResponse.ContentStream.Size := 0;
     LWebResponse.ContentStream.CopyFrom(LMemoryStream, 0);
     {$IF DEFINED(FPC)}
-    LWebResponse.Content := TStringStream(LWebResponse.ContentStream).DataString;
+    LWebResponse.ContentLength :=  LMemoryStream.Size;
     {$ELSE}
     LWebResponse.Content := EmptyStr;
     {$ENDIF}
