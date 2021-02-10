@@ -9,8 +9,8 @@ uses Horse, Horse.Jhonson, Horse.Compression, System.JSON;
 
 begin
   THorse
-    .Use( Compression() ) // Must come before Jhonson middleware
-    .Use( Jhonson() );
+    .Use(Compression()) // Must come before Jhonson middleware
+    .Use(Jhonson());
 
   THorse.Get('/ping',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
