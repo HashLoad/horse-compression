@@ -3,12 +3,19 @@ program Samples;
 {$APPTYPE CONSOLE}
 {$R *.res}
 
-uses Horse, Horse.Jhonson, Horse.Compression, System.JSON;
+uses
+  Horse,
+  Horse.Jhonson,
+  Horse.Compression, // It's necessary to use the unit
+  System.JSON;
 
 begin
   THorse
     .Use(Compression()) // Must come before Jhonson middleware
     .Use(Jhonson);
+
+  // You can set compression threshold:
+  // THorse.Use(Compression(1024));
 
   THorse.Get('/ping',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
