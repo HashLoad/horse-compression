@@ -33,7 +33,7 @@ end;
 
 procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: {$IF DEFINED(FPC)}TNextProc{$ELSE}TProc{$ENDIF});
 const
-  ACCEPT_ENCODING = 'accept-encoding';
+  ACCEPT_ENCODING = 'Accept-Encoding';
 var
   LMemoryStream: TMemoryStream;
   LAcceptEncoding: string;
