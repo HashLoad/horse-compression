@@ -45,7 +45,7 @@ begin
   LContent := Res.Content;
   if (not Assigned(LContent)) or (not LContent.InheritsFrom({$IF DEFINED(FPC)}TJsonData{$ELSE}TJSONValue{$ENDIF})) then
     Exit;
-  if not Req.Headers.ContainsKey(ACCEPT_ENCODING) then
+  if Trim(Req.Headers[ACCEPT_ENCODING]) = EmptyStr then
     Exit;
   LAcceptEncoding := Req.Headers[ACCEPT_ENCODING].ToLower;
   if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding) > 0 then

@@ -12,8 +12,8 @@
 		},
 		"github.com/hashload/jhonson": {
 			"name": "jhonson",
-			"version": "1.1.2",
-			"hash": "85d9b3c97b5144448440d7d26bdd16de",
+			"version": "1.1.3",
+			"hash": "711f200029b2fc3aef76ab410ac5833a",
 			"artifacts": {},
 			"failed": false,
 			"changed": false

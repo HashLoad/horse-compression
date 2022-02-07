@@ -41,7 +41,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\..\src;modules\horse\src;modules\jhonson\src"/>
+      <OtherUnitFiles Value="..\..\src;modules\.dcp;modules\.dcu;modules;modules\horse\src;modules\jhonson\src"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Other>
@@ -49,7 +49,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="4">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -59,6 +59,9 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="EResNotFound"/>
+      </Item4>
     </Exceptions>
   </Debugging>
 </CONFIG>
