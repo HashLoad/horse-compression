@@ -7,10 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Horse,
-  Horse.Jhonson,
   Horse.Compression, // It's necessary to use the unit
-  fpjson,
-  SysUtils;
+  fpjson;
 
 procedure GetPing(Req: THorseRequest; Res: THorseResponse; Next: TNextProc);
 var
@@ -19,29 +17,27 @@ var
   LJson: TJSONObject;
 begin
   LPong := TJSONArray.Create;
-  for I := 0 to 1000 do
-  begin
-    LJson := TJSONObject.Create;
-    LJson.Add('ping', 'pong');
-    LPong.Add(LJson);
+  try
+    for I := 0 to 1000 do
+    begin
+      LJson := TJSONObject.Create;
+      LJson.Add('ping', 'pong');
+      LPong.Add(LJson);
+    end;
+    Res.Send(LPong.AsJSON);
+  finally
+    LPong.Free;
   end;
-  Res.Send<TJSONArray>(LPong);
-end;
-
-procedure OnListen(Horse: THorse);
-begin
-  Writeln(Format('Server is runing on %s:%d', [Horse.Host, Horse.Port]));
 end;
 
 begin
   THorse
-    .Use(Compression()) // Must come before Jhonson middleware
-    .Use(Jhonson);
+    .Use(Compression()); // Must come before Jhonson middleware
 
   // You can set compression threshold:
   // THorse.Use(Compression(1024));
 
   THorse.Get('/ping', GetPing);
 
-  THorse.Listen(9000, OnListen);
+  THorse.Listen;
 end.

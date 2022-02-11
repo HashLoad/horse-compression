@@ -39,12 +39,12 @@ var
   LAcceptEncoding: string;
   LZStream: {$IF DEFINED(FPC)}TCompressionStream{$ELSE}TZCompressionStream{$ENDIF};
   LResponseCompressionType: THorseCompressionType;
-  LContent: TObject;
+  LStringStream: TStringStream;
 begin
   Next;
-  LContent := Res.Content;
-  if (not Assigned(LContent)) or (not LContent.InheritsFrom({$IF DEFINED(FPC)}TJsonData{$ELSE}TJSONValue{$ENDIF})) then
-    Exit;
+  if Trim(Res.RawWebResponse.Content) = EmptyStr then
+    if (Res.Content = nil) or (not Res.Content.InheritsFrom({$IF DEFINED(FPC)}TJsonData{$ELSE}TJSONValue{$ENDIF})) then
+      Exit;
   if Trim(Req.Headers[ACCEPT_ENCODING]) = EmptyStr then
     Exit;
   LAcceptEncoding := Req.Headers[ACCEPT_ENCODING].ToLower;
@@ -56,34 +56,36 @@ begin
   {$ENDIF}
   else
     Exit;
-  Res.RawWebResponse.ContentStream := TStringStream.Create({$IF DEFINED(FPC)}TJsonData(LContent).AsJSON{$ELSE}TJSONValue(LContent).ToJSON{$ENDIF});
-  if Res.RawWebResponse.ContentStream.Size <= CompressionThreshold then
-    Exit;
-  LMemoryStream := TMemoryStream.Create;
+  LStringStream := nil;
   try
-    Res.RawWebResponse.ContentStream.Position := 0;
+    if Trim(Res.RawWebResponse.Content) = EmptyStr then
+      LStringStream := TStringStream.Create({$IF DEFINED(FPC)}TJsonData(Res.Content).AsJSON{$ELSE}TJSONValue(Res.Content).ToJSON{$ENDIF})
+    else
+      LStringStream := TStringStream.Create(Res.RawWebResponse.Content);
+    if LStringStream.Size <= CompressionThreshold then
+      Exit;
+    LMemoryStream := TMemoryStream.Create;
     {$IF DEFINED(FPC)}
-    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream,  LResponseCompressionType.WindowsBits = -15);
+    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream, LResponseCompressionType.WindowsBits = -15);
     {$ELSE}
     LZStream := TZCompressionStream.Create(LMemoryStream, TZCompressionLevel.zcMax, LResponseCompressionType.WindowsBits);
     {$ENDIF}
     try
-      Res.RawWebResponse.ContentStream.Position := 0;
-      LZStream.CopyFrom(Res.RawWebResponse.ContentStream, 0);
+      LStringStream.Position := 0;
+      LZStream.CopyFrom(LStringStream, 0);
     finally
       LZStream.Free;
     end;
     LMemoryStream.Position := 0;
-    Res.RawWebResponse.ContentStream.Size := 0;
-    Res.RawWebResponse.ContentStream.CopyFrom(LMemoryStream, 0);
+    Res.RawWebResponse.ContentStream := LMemoryStream;
     {$IF DEFINED(FPC)}
-    Res.RawWebResponse.ContentLength :=  LMemoryStream.Size;
+    Res.RawWebResponse.ContentLength := LMemoryStream.Size;
     {$ELSE}
     Res.RawWebResponse.Content := EmptyStr;
     {$ENDIF}
     Res.RawWebResponse.ContentEncoding := LResponseCompressionType.ToString;
   finally
-    LMemoryStream.Free;
+    LStringStream.Free;
   end;
 end;
 
