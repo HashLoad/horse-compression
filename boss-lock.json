@@ -1,11 +1,11 @@
 {
 	"hash": "3064c0908a266b1dd8824ba40f25db07",
-	"updated": "2021-10-06T08:59:26.5422357-03:00",
+	"updated": "2022-02-16T09:09:24.3627042-03:00",
 	"installedModules": {
 		"github.com/hashload/horse": {
 			"name": "horse",
-			"version": "v2.0.14",
-			"hash": "38c6bebdc7b9712d6e5856d299289a26",
+			"version": "3.0.0",
+			"hash": "195e14c9c225f81a8c69d18b5118c149",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
