@@ -61,7 +61,7 @@ begin
     if Trim(Res.RawWebResponse.Content) = EmptyStr then
       LStringStream := TStringStream.Create({$IF DEFINED(FPC)}TJsonData(Res.Content).AsJSON{$ELSE}TJSONValue(Res.Content).ToJSON{$ENDIF})
     else
-      LStringStream := TStringStream.Create(Res.RawWebResponse.Content);
+      LStringStream := TStringStream.Create(Res.RawWebResponse.Content {$IF NOT DEFINED(FPC)}, TEncoding.UTF8{$ENDIF});
     if LStringStream.Size <= CompressionThreshold then
       Exit;
     LMemoryStream := TMemoryStream.Create;
