@@ -66,7 +66,7 @@ begin
       Exit;
     LMemoryStream := TMemoryStream.Create;
     {$IF DEFINED(FPC)}
-    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream, LResponseCompressionType.WindowsBits = -15);
+    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream, False);
     {$ELSE}
     LZStream := TZCompressionStream.Create(LMemoryStream, TZCompressionLevel.zcMax, LResponseCompressionType.WindowsBits);
     {$ENDIF}
