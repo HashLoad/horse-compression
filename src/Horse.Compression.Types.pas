@@ -32,7 +32,7 @@ function THorseCompressionTypeHelper.WindowsBits: Integer;
 begin
   case Self of
     THorseCompressionType.DEFLATE:
-      Result := -15;
+      Result := 15;
   else
     Result := 31;
   end;
