@@ -28,7 +28,7 @@ var
 function Compression(const ACompressionThreshold: Integer = COMPRESSION_THRESHOLD): THorseCallback;
 begin
   CompressionThreshold := ACompressionThreshold;
-  Result := {$IF DEFINED(FPC)}@Middleware{$ELSE}Middleware{$ENDIF};
+  Result := Middleware;
 end;
 
 procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: {$IF DEFINED(FPC)}TNextProc{$ELSE}TProc{$ENDIF});
