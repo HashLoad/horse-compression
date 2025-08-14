@@ -1,5 +1,5 @@
 # horse-compression
-<b>horse-compression</b> is a official middleware for compressing content in APIs developed with the <a href="https://github.com/HashLoad/horse">Horse</a> framework.
+<b>horse-compression</b> is an official middleware for compressing content in APIs developed with the <a href="https://github.com/HashLoad/horse">Horse</a> framework.
 <br>We created a channel on Telegram for questions and support:<br><br>
 <a href="https://t.me/hashload">
   <img src="https://img.shields.io/badge/telegram-join%20channel-7289DA?style=flat-square">
@@ -105,7 +105,7 @@ end.
 
 ## 🚀 Statistics 
 
-Using middleware, the response was approximately 67 turn smaller. Data were collected using the project available within the [samples (delphi)](https://github.com/HashLoad/horse-compression/tree/master/samples/delphi) folder. To default, responses less than or equal to 1024 bytes will not be compressed.
+When using the middleware, the response size was approximately 67 times smaller. Data were collected using the project available within the [samples (delphi)](https://github.com/HashLoad/horse-compression/tree/master/samples/delphi) folder. To default, responses less than or equal to 1024 bytes will not be compressed.
 
 Property    | Without | With
 :---------: | ------: | ------:
