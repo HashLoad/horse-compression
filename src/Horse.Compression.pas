@@ -8,7 +8,7 @@ interface
 
 uses
 {$IF DEFINED(FPC)}
-  SysUtils, Classes, zstream, HTTPDefs, fpjson,
+  SysUtils, Classes, zstream, crc, HTTPDefs, fpjson,
 {$ELSE}
   System.Classes, System.ZLib, System.SysUtils, Web.HTTPApp, System.JSON,
 {$ENDIF}
@@ -34,6 +34,10 @@ end;
 procedure Middleware(Req: THorseRequest; Res: THorseResponse; Next: {$IF DEFINED(FPC)}TNextProc{$ELSE}TProc{$ENDIF});
 const
   ACCEPT_ENCODING = 'Accept-Encoding';
+  {$IF DEFINED(FPC)}
+  // zstream has no gzip mode: gzip is this header + raw deflate + CRC32 and size (RFC 1952)
+  GZIP_HEADER: array[0..9] of Byte = ($1F, $8B, $08, $00, 0, 0, 0, 0, $02, $FF);
+  {$ENDIF}
 var
   LMemoryStream: TMemoryStream;
   LAcceptEncoding: string;
@@ -42,7 +46,8 @@ var
   LStringStream: TStringStream;
 begin
   Next;
-  if Trim(Res.RawWebResponse.Content) = EmptyStr then
+  // Horse 3.3+ on FPC sends Res.Send(string) as RawWebResponse.ContentStream, not Content
+  if (Trim(Res.RawWebResponse.Content) = EmptyStr) {$IF DEFINED(FPC)}and (Res.RawWebResponse.ContentStream = nil){$ENDIF} then
     if (Res.Content = nil) or (not Res.Content.InheritsFrom({$IF DEFINED(FPC)}TJsonData{$ELSE}TJSONValue{$ENDIF})) then
       Exit;
   if Trim(Req.Headers[ACCEPT_ENCODING]) = EmptyStr then
@@ -50,14 +55,20 @@ begin
   LAcceptEncoding := Req.Headers[ACCEPT_ENCODING].ToLower;
   if Pos(THorseCompressionType.DEFLATE.ToString, LAcceptEncoding) > 0 then
     LResponseCompressionType := THorseCompressionType.DEFLATE
-  {$IF NOT DEFINED(FPC)}
   else if Pos(THorseCompressionType.GZIP.ToString, LAcceptEncoding) > 0 then
     LResponseCompressionType := THorseCompressionType.GZIP
-  {$ENDIF}
   else
     Exit;
   LStringStream := nil;
   try
+    {$IF DEFINED(FPC)}
+    if (Trim(Res.RawWebResponse.Content) = EmptyStr) and (Res.RawWebResponse.ContentStream <> nil) then
+    begin
+      LStringStream := TStringStream.Create('');
+      LStringStream.CopyFrom(Res.RawWebResponse.ContentStream, 0);
+    end
+    else
+    {$ENDIF}
     if Trim(Res.RawWebResponse.Content) = EmptyStr then
       LStringStream := TStringStream.Create({$IF DEFINED(FPC)}TJsonData(Res.Content).AsJSON{$ELSE}TJSONValue(Res.Content).ToJSON{$ENDIF})
     else
@@ -66,7 +77,10 @@ begin
       Exit;
     LMemoryStream := TMemoryStream.Create;
     {$IF DEFINED(FPC)}
-    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream, False);
+    if LResponseCompressionType = THorseCompressionType.GZIP then
+      LMemoryStream.WriteBuffer(GZIP_HEADER, SizeOf(GZIP_HEADER));
+    LZStream := TCompressionStream.Create(Tcompressionlevel.clmax, LMemoryStream,
+      LResponseCompressionType = THorseCompressionType.GZIP);
     {$ELSE}
     LZStream := TZCompressionStream.Create(LMemoryStream, TZCompressionLevel.zcMax, LResponseCompressionType.WindowsBits);
     {$ENDIF}
@@ -76,9 +90,17 @@ begin
     finally
       LZStream.Free;
     end;
+    {$IF DEFINED(FPC)}
+    if LResponseCompressionType = THorseCompressionType.GZIP then
+    begin
+      LMemoryStream.WriteDWord(NtoLE(crc32(crc32(0, nil, 0), PByte(LStringStream.Memory), LStringStream.Size)));
+      LMemoryStream.WriteDWord(NtoLE(LongWord(LStringStream.Size)));
+    end;
+    {$ENDIF}
     LMemoryStream.Position := 0;
     Res.RawWebResponse.ContentStream := LMemoryStream;
     {$IF DEFINED(FPC)}
+    Res.RawWebResponse.FreeContentStream := True;
     Res.RawWebResponse.ContentLength := LMemoryStream.Size;
     {$ELSE}
     Res.RawWebResponse.Content := EmptyStr;
